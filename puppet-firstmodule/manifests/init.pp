@@ -35,7 +35,19 @@
 #
 # Copyright 2016 Your name here, unless otherwise noted.
 #
-node ceph1 {
+
+node default {
+	file {"/tmp/default":
+		content => "Default",
+	}
+}
+node 'ceph1' {
+	file {"/tmp/myfirstmodule":
+		content => "Hello World from myfirstmodule",
+	}
+}
+
+node 'ceph2.local' {
 	file {"/tmp/myfirstmodule":
 		content => "Hello World from myfirstmodule",
 	}

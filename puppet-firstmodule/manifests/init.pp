@@ -41,14 +41,14 @@ node default {
 		content => "Default",
 	}
 }
+node 'ceph2' {
+	file {"/tmp/myfirstmodule":
+		content => "Hello World from myfirstmodule",
+	}
+}
 node 'ceph1' {
 	file {"/tmp/myfirstmodule":
 		content => "Hello World from myfirstmodule",
 	}
 }
 
-node 'ceph2.local' {
-	file {"/tmp/myfirstmodule":
-		content => "Hello World from myfirstmodule",
-	}
-}

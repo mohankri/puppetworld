@@ -30,6 +30,21 @@ puppet apply manifest/site.pp
 
 Connecting Puppet Agent to Puppet Master
 
+
+Building Module
+===============
+puppet module build puppet-firstmodule
+
+As root install puppet module
+puppet module install puppet-firstmodule-0.1.0.tar.gz
+
+List installed Puppet
+puppet module list
+
+Uninstall puppet module
+puppet module uninstall puppet-firstmodule
+puppet module uninstall puppetlabs-stdlib
+
 Issues
 =====
 1) Could not request certificate: getaddrinfo: Name or service not known
@@ -63,5 +78,13 @@ puppet cert list
  >>> should have agent MD5
 puppet cert --sign agenthostname   >>> sign the certificate
 
+puppet.conf missing on master (recreate one)
+puppet master --genconfig > /etc/puppet/puppet.conf
 
+
+puppet apply works on master but fails for agent (catalog not compiled)
+
+3) Warning: Missing dependency 'puppetlabs-stdlib':
+  'puppet-firstmodule' (v0.1.0) requires 'puppetlabs-stdlib' (>= 1.0.0)
+sed -i -e 's|puppetlabs-stdlib|puppetlabs/stdlib|' metadata.json
 ```

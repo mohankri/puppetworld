@@ -7,6 +7,43 @@ Installation
 apt-get install puppetmaster
 apt-get install puppet
 
+Configuration File
+==================
+Agent
+======
+$cat /etc/puppet/puppet.conf 
+
+[main]
+server=ceph1
+logdir=/var/log/puppet
+vardir=/var/lib/puppet
+ssldir=/var/lib/puppet/ssl
+rundir=/var/run/puppet
+factpath=$vardir/lib/facter
+templatedir=$confdir/templates
+runinterval = 1h
+
+[master]
+# These are needed when the puppetmaster is run by passenger
+# and can safely be removed if webrick is used.
+ssl_client_header = SSL_CLIENT_S_DN 
+ssl_client_verify_header = SSL_CLIENT_VERIFY
+
+Master
+=====
+$cat /etc/puppet/puppet.conf 
+
+[main]
+certname = ceph1
+server = ceph1
+environment = production
+runinterval = 1h
+strict_variables = true
+
+[master]
+dns_alt_names = ceph1,ceph1.local
+
+
 Building puppet module
 ======================
 If starting from scratch (To build basic template for you)
@@ -42,7 +79,26 @@ Verify for creation of /tmp/myfirstmodule on master
 puppet apply manifest/init.pp
 
 Testing Agent
-puppet agent -t --debug --verbose
+Include module into to manifest file
+
+$cat /etc/puppet/manifests/site.pp
+import 'firstmodule'               =====> your module name
+
+puppet agent -t --debug --verbose    ==> It will need certificate signup
+
+On master
+sudo puppet cert --sign <agenthostname>
+
+On Agent (Repeat); 
+puppet agent -t --debug --verbose 
+
+Verify for creation of /tmp/myfirstmodule on agent
+
+Delete /tmp/myfirstmodule and it should get recreated after specified time interval 
+
+Change to shorten agent run interval
+
+runinterval = 1h
 
 
 Cleanup
@@ -68,12 +124,26 @@ Issues
 $ puppet agent --configprint server
 puppet
 
-[agent]
-server=master.hostname
+Update /etc/puppet/puppet.conf 
+
+cat /etc/puppet/puppet.conf 
+[main]
+certname = <agenthostname>
+server = <masterhostname>
+environment = production
+runinterval = 1h
+
 
 $ puppet agent --configprint server
-master.hostname
+<masterhostname>
 
+2) err: Could not retrieve catalog from remote server: SSL_connect returned=1 errno=0 state=SSLv3
+master:
+puppet cert clean <NODE NAME>
+
+agent:
+rm -r $(puppet agent --configprint ssldir)
+puppet agent --test
 
 
 2) Could not find certificate request
@@ -85,12 +155,12 @@ restart master
 puppet master --no-daemonize --debug --verbose
 
 restart agent
-puppet agent --server masterhostname --no-daemonize --verbose
+puppet agent --server <masterhostname> --no-daemonize --verbose
 
 on master
 puppet cert list
  >>> should have agent MD5
-puppet cert --sign agenthostname   >>> sign the certificate
+puppet cert --sign <agenthostname>    (sign the certificate)
 
 puppet.conf missing on master (recreate one)
 puppet master --genconfig > /etc/puppet/puppet.conf

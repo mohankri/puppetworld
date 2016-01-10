@@ -90,7 +90,7 @@ On master
 sudo puppet cert --sign <agenthostname>
 
 On Agent (Repeat); 
-puppet agent -t --debug --verbose 
+puppet agent -t --debug --verbose   or puppet agent --test
 
 Verify for creation of /tmp/myfirstmodule on agent
 

@@ -2,6 +2,25 @@
 
 ```
 
+## Copy Directory from Master to Agent
+
+create a directory files under firstmodule directory that will hold testingdir
+
+i.e modules/firstmodule/files/testingdir
+
+class test {
+        file {"testdir":
+                recurse => remote,
+                ensure => "directory",
+                path => "/var/opt/newdir",
+                source => "puppet:///modules/firstmodule/testingdir"
+        }
+}
+
+node <hostname> {
+	include test
+}
+
 Installation
 ============
 apt-get install puppetmaster
@@ -117,6 +136,23 @@ sudo apt-get purge --auto-remove puppetmaster
 sudo apt-get purge --auto-remove puppet
 
 
+Setup to clone private git repository via puppet
+=================================================
+
+$ssh-keygen -t rsa -b 4096 -C "your github email addresss"
+
+Ensure ssu-agent is running
+$eval "$(ssh-agent -s)"
+
+Agent pid $$$
+
+Add your SSH key to your account
+Copy rsa.pub file on github ssh keys -> Add SSH keys
+
+Test the connection
+ssh -T git@github.com
+
+
 Issues
 =====
 1) Could not request certificate: getaddrinfo: Name or service not known
@@ -137,16 +173,17 @@ runinterval = 1h
 $ puppet agent --configprint server
 <masterhostname>
 
-2) err: Could not retrieve catalog from remote server: SSL_connect returned=1 errno=0 state=SSLv3
+2) err: Could not retrieve catalog from remote server: 
+SSL connect returned=1 errno=0 state=SSLv3
 master:
 puppet cert clean <NODE NAME>
 
-agent:
+Agent:
 rm -r $(puppet agent --configprint ssldir)
 puppet agent --test
 
 
-2) Could not find certificate request
+3) Could not find certificate request
 puppet node clean <agenthostname>     //on master
 
 rm -rf /var/lib/puppet/ssl   //on agent
@@ -168,13 +205,16 @@ puppet master --genconfig > /etc/puppet/puppet.conf
 
 puppet apply works on master but fails for agent (catalog not compiled)
 
-3) Warning: Missing dependency 'puppetlabs-stdlib':
+4) Warning: Missing dependency 'puppetlabs-stdlib':
   'puppet-firstmodule' (v0.1.0) requires 'puppetlabs-stdlib' (>= 1.0.0)
 sed -i -e 's|puppetlabs-stdlib|puppetlabs/stdlib|' metadata.json
 
-4) Could not create PID file: /var/lib/puppet/run/master.pid
+5) Could not create PID file: /var/lib/puppet/run/master.pid
    Either puppet instance is running or someother application is using it.
 	lsof -i :8140    >>> verify
    Kill the process service puppetmaster stop
+
+
+
 
 ```
